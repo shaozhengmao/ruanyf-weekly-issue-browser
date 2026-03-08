@@ -2,14 +2,13 @@
 
 一个静态网站，用于分类浏览 [阮一峰科技爱好者周刊](https://github.com/ruanyf/weekly) 的 GitHub Issues（自荐/投稿区）。
 
-> 数据范围：2025年1月至今的 open issues
+> 数据范围：2024年1月至今的 open issues
 
 ## ✨ 功能
 
-- **两级分类**：一级按标题前缀（开源自荐/工具/产品/项目/投稿推荐/讨论反馈），二级按内容关键词（AI·LLM / 前端·Web / 后端·服务 / DevOps / 移动端 / 数据·可视化 / 设计·创意 / 安全·隐私 / 学习·教程）
+- **两级分类**：一级按标题前缀（已收录/开源项目/工具·产品/项目/投稿推荐/讨论反馈），二级按内容关键词（AI·LLM / 前端·Web / 后端·服务 / DevOps / 移动端 / 数据·可视化 / 设计·创意 / 安全·隐私 / 学习·教程）
 - **全文搜索**：前端构建倒排索引，支持中英文混合搜索
 - **时间筛选**：按年月过滤
-- **排序**：最新 / 最热（reactions + comments）
 - **收录标记**：有 `weekly` label 的 issue 标记 ⭐
 - **无限滚动**：懒加载，首次只渲染30条
 - **响应式设计**：手机端友好
@@ -27,7 +26,7 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/YOUR_USERNAME/ruanyf-weekly-issue-browser.git
+git clone https://github.com/shaozhengmao/ruanyf-weekly-issue-browser.git
 cd ruanyf-weekly-issue-browser
 
 # 2. 抓取数据（可选设置 token 提高限速）
@@ -44,7 +43,7 @@ python -m http.server 8000
 1. Fork 本仓库
 2. 进入 Settings → Pages → Source 选择 GitHub Actions
 3. 手动触发一次 Actions（或等待每天自动运行）
-4. 访问 `https://YOUR_USERNAME.github.io/ruanyf-weekly-issue-browser/`
+4. 访问 `https://shaozhengmao.github.io/ruanyf-weekly-issue-browser/`
 
 ## 📁 文件结构
 
@@ -68,9 +67,9 @@ ruanyf-weekly-issue-browser/
 
 | 前缀 | 分类 |
 |------|------|
+| 有 `weekly` label | ⭐ 已收录 |
 | `【开源自荐】` `[开源自荐]` | 📦 开源项目 |
-| `【工具自荐】` | 🔧 工具 |
-| `【产品自荐】` | 🚀 产品 |
+| `【工具自荐】` `【产品自荐】` | 🔧 工具/产品 |
 | `【项目自荐】` | 💡 项目 |
 | `【投稿】` `【推荐】` | 📮 投稿推荐 |
 | 其他 | 💬 讨论/反馈 |

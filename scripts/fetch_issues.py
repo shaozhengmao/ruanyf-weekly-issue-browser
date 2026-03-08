@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 # Configuration
 REPO = "ruanyf/weekly"
 API_BASE = f"https://api.github.com/repos/{REPO}/issues"
-SINCE_DATE = "2025-01-01T00:00:00Z"
+SINCE_DATE = "2024-01-01T00:00:00Z"
 PER_PAGE = 100
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 STATE_FILE = DATA_DIR / ".fetch_state.json"
