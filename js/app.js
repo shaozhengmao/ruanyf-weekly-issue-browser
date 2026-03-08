@@ -373,8 +373,7 @@
         allBtn.style.cssText = currentSubcategory === 'all'
             ? `background:${CATEGORY_COLORS[category]?.text || '#58a6ff'};color:#fff;`
             : '';
-        const totalCount = entries.reduce((s, e) => s + e[1], 0);
-        allBtn.innerHTML = `全部 <span class="subcat-count">${formatNumber(totalCount)}</span>`;
+        allBtn.innerHTML = `全部`;
         dom.subcatTabs.appendChild(allBtn);
 
         // Individual subcategory buttons
@@ -386,7 +385,7 @@
             if (currentSubcategory === sub) {
                 btn.style.cssText = `background:${meta.color};color:#fff;border-color:${meta.color};`;
             }
-            btn.innerHTML = `${meta.icon} ${sub} <span class="subcat-count">${formatNumber(count)}</span>`;
+            btn.innerHTML = `${meta.icon} ${sub}`;
             dom.subcatTabs.appendChild(btn);
         });
     }
