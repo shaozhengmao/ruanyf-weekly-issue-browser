@@ -102,7 +102,11 @@
             buildMonthFilter();
 
             // Build search index async
-            (window.requestIdleCallback || setTimeout)(() => buildSearchIndex(), 100);
+            if (window.requestIdleCallback) {
+                requestIdleCallback(() => buildSearchIndex());
+            } else {
+                setTimeout(() => buildSearchIndex(), 100);
+            }
 
             applyFilters();
         } catch (err) {
