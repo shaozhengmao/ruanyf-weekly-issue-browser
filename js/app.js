@@ -15,16 +15,19 @@
     // Category colors (matches Python script)
     const CATEGORY_COLORS = {
         '开源项目': { bg: 'rgba(88,166,255,0.15)', text: '#58a6ff' },
-        '工具':     { bg: 'rgba(240,136,62,0.15)', text: '#f0883e' },
-        '产品':     { bg: 'rgba(163,113,247,0.15)', text: '#a371f7' },
+        '工具/产品': { bg: 'rgba(240,136,62,0.15)', text: '#f0883e' },
         '投稿推荐': { bg: 'rgba(210,153,34,0.15)', text: '#d29922' },
         '讨论/反馈': { bg: 'rgba(139,148,158,0.12)', text: '#8b949e' },
+        '已收录':   { bg: 'rgba(210,153,34,0.15)', text: '#d29922' },
     };
 
     const CATEGORY_ICONS = {
-        '开源项目': '📦', '工具': '🔧', '产品': '🚀',
-        '投稿推荐': '📮', '讨论/反馈': '💬',
+        '开源项目': '📦', '工具/产品': '🔧',
+        '投稿推荐': '📮', '讨论/反馈': '💬', '已收录': '⭐',
     };
+
+    // Category display order
+    const CATEGORY_ORDER = ['开源项目', '工具/产品', '投稿推荐', '讨论/反馈'];
 
     // ===== State =====
     let allIssues = [];
@@ -63,7 +66,6 @@
         backToTop: $('#backToTop'),
         lastUpdated: $('#lastUpdated'),
         resetFilters: $('#resetFilters'),
-        countAll: $('#countAll'),
     };
 
     // ===== Data Loading =====
@@ -182,7 +184,9 @@
         }
 
         // Category filter
-        if (currentCategory !== 'all') {
+        if (currentCategory === 'featured') {
+            issues = issues.filter(i => i.featured);
+        } else if (currentCategory !== 'all') {
             issues = issues.filter(i => i.category === currentCategory);
         }
 
@@ -312,11 +316,19 @@
 
     // ===== UI Builders =====
     function buildCategoryTabs(categoryCounts) {
-        const total = allIssues.length;
-        dom.countAll.textContent = formatNumber(total);
+        // Add "已收录" tab first (after 全部)
+        const featuredBtn = document.createElement('button');
+        featuredBtn.className = 'cat-btn';
+        featuredBtn.dataset.category = 'featured';
+        featuredBtn.innerHTML = `
+            <span class="cat-icon">⭐</span>
+            <span class="cat-name">已收录</span>
+        `;
+        dom.categoryTabs.appendChild(featuredBtn);
 
-        const categories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
-        categories.forEach(([cat, count]) => {
+        // Build other category tabs in specified order
+        CATEGORY_ORDER.forEach(cat => {
+            if (categoryCounts[cat] === undefined) return;
             const btn = document.createElement('button');
             btn.className = 'cat-btn';
             btn.dataset.category = cat;
@@ -324,7 +336,6 @@
             btn.innerHTML = `
                 <span class="cat-icon">${icon}</span>
                 <span class="cat-name">${cat}</span>
-                <span class="cat-count">${formatNumber(count)}</span>
             `;
             dom.categoryTabs.appendChild(btn);
         });
@@ -333,7 +344,7 @@
     function buildSubcategoryTabs(category) {
         dom.subcatTabs.innerHTML = '';
 
-        if (category === 'all' || !subcatCounts[category]) {
+        if (category === 'all' || category === 'featured' || !subcatCounts[category]) {
             dom.subfilters.style.display = 'none';
             return;
         }
