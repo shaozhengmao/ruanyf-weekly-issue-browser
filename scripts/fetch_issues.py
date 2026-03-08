@@ -225,11 +225,12 @@ def get_year_month(date_str: str) -> str:
     return date_str[:7]
 
 
-def fetch_page(page: int, since: str, headers: dict) -> tuple[list, dict]:
+def fetch_page(page: int, headers: dict) -> tuple[list, dict]:
     """Fetch a single page of issues. Returns (issues_list, response_headers)."""
+    # Don't use 'since' param - it filters by updated_at, not created_at
+    # We'll filter by created_at locally after fetching all issues
     params = urlencode({
         "state": "open",
-        "since": since,
         "per_page": PER_PAGE,
         "page": page,
         "sort": "created",
@@ -250,7 +251,7 @@ def fetch_page(page: int, since: str, headers: dict) -> tuple[list, dict]:
                 wait = max(reset_time - int(time.time()), 1)
                 print(f"\n⏳ Rate limited. Waiting {wait}s until reset...")
                 time.sleep(wait + 1)
-                return fetch_page(page, since, headers)
+                return fetch_page(page, headers)
             raise
         elif e.code == 422:
             print(f"\n⚠ GitHub API returned 422 for page {page}, skipping...")
@@ -282,15 +283,15 @@ def save_state(state: dict):
 
 
 def fetch_all_issues():
-    """Main fetch logic - always fetch all open issues since SINCE_DATE."""
+    """Main fetch logic - always fetch all open issues, then filter by SINCE_DATE."""
     headers = get_headers()
 
-    # Always start from SINCE_DATE to get all issues
-    since = SINCE_DATE
+    # Parse SINCE_DATE for local filtering
+    since_dt = datetime.fromisoformat(SINCE_DATE.replace("Z", "+00:00"))
     fetch_start = datetime.now(timezone.utc).isoformat()
 
     print(f"\n📡 Fetching issues from ruanyf/weekly")
-    print(f"   Since: {since}")
+    print(f"   Filtering by created_at >= {SINCE_DATE}")
     print(f"   Fetching all open issues...")
     print()
 
@@ -301,7 +302,7 @@ def fetch_all_issues():
         sys.stdout.write(f"\r   Fetching page {page}...")
         sys.stdout.flush()
 
-        issues_data, resp_headers = fetch_page(page, since, headers)
+        issues_data, resp_headers = fetch_page(page, headers)
 
         if not issues_data:
             break
@@ -310,6 +311,17 @@ def fetch_all_issues():
         issues_data = [i for i in issues_data if "pull_request" not in i]
 
         for raw in issues_data:
+            # Filter by created_at locally
+            created_at = raw.get("created_at", "")
+            if created_at:
+                try:
+                    issue_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                    if issue_dt < since_dt:
+                        # Issue is before SINCE_DATE, skip it
+                        continue
+                except ValueError:
+                    pass
+
             raw_body = raw.get("body") or ""
             category = categorize_title(raw["title"])
             subcategory = categorize_body(raw["title"], raw_body)
@@ -340,6 +352,19 @@ def fetch_all_issues():
         remaining, limit = check_rate_limit(resp_headers)
         sys.stdout.write(f"\r   Page {page}: {len(issues_data)} issues (API: {remaining}/{limit} remaining)   \n")
 
+        # Check if we've reached issues before SINCE_DATE
+        # Since we sort by created_at desc, once we see an old issue, we can stop
+        if issues_data:
+            last_created = issues_data[-1].get("created_at", "")
+            if last_created:
+                try:
+                    last_dt = datetime.fromisoformat(last_created.replace("Z", "+00:00"))
+                    if last_dt < since_dt:
+                        print(f"\n   Reached issues before {SINCE_DATE}, stopping...")
+                        break
+                except ValueError:
+                    pass
+
         if len(issues_data) < PER_PAGE:
             break
 
@@ -348,7 +373,7 @@ def fetch_all_issues():
 
     # Convert to list
     all_issues = list(all_issues_dict.values())
-    print(f"\n✅ Fetch complete: {len(all_issues)} open issues")
+    print(f"\n✅ Fetch complete: {len(all_issues)} open issues (created_at >= {SINCE_DATE})")
 
     # Sort by created_at descending
     all_issues = sorted(all_issues, key=lambda x: x["created_at"], reverse=True)
