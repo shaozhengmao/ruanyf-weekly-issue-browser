@@ -28,7 +28,9 @@ CATEGORY_PATTERNS = [
     (r"[\[【].*?开源.*?自荐.*?[\]】]", "开源项目"),
     (r"[\[【].*?工具.*?自荐.*?[\]】]", "工具"),
     (r"[\[【].*?产品.*?自荐.*?[\]】]", "产品"),
-    (r"[\[【].*?项目.*?自荐.*?[\]】]", "项目"),
+    (r"[\[【].*?项目.*?自荐.*?[\]】]", "开源项目"),  # 项目自荐 -> 开源项目
+    (r"[\[【].*?文章.*?自荐.*?[\]】]", "投稿推荐"),  # 文章自荐
+    (r"[\[【].*?资源.*?推荐.*?[\]】]", "投稿推荐"),  # 资源推荐
     (r"[\[【].*?(?:投稿|推荐).*?[\]】]", "投稿推荐"),
     (r"[\[【].*?自荐.*?[\]】]", "开源项目"),  # generic 自荐 -> 开源项目
 ]
@@ -39,7 +41,6 @@ CATEGORY_META = {
     "开源项目": {"color": "#58a6ff", "icon": "📦"},
     "工具":     {"color": "#f0883e", "icon": "🔧"},
     "产品":     {"color": "#a371f7", "icon": "🚀"},
-    "项目":     {"color": "#3fb950", "icon": "💡"},
     "投稿推荐": {"color": "#d29922", "icon": "📮"},
     "讨论/反馈": {"color": "#8b949e", "icon": "💬"},
 }
@@ -54,12 +55,12 @@ SUBCATEGORY_RULES = [
         "keywords": [
             r"(?<![a-zA-Z])AI(?![a-zA-Z])", r"LLM", r"大模型", r"GPT", r"Claude",
             r"(?<![a-zA-Z])Agent(?![a-zA-Z])", r"机器学习", r"深度学习", r"(?<![a-zA-Z])ML(?![a-zA-Z])", r"自然语言",
-            r"NLP", r"神经网络", r"transformer", r"RAG", r"向量",
+            r"NLP", r"神经网络", r"transformer", r"RAG", r"向量数据库",
             r"embedding", r"diffusion", r"stable.?diffusion", r"midjourney",
             r"copilot", r"chatbot", r"聊天机器人", r"智能体", r"大语言",
             r"ollama", r"langchain", r"openai", r"gemini", r"(?<![a-zA-Z])bert(?![a-zA-Z])",
             r"text.to.image", r"文生图", r"语音合成", r"TTS", r"ASR",
-            r"OCR", r"计算机视觉", r"computer.vision", r"人工智能",
+            r"OCR", r"计算机视觉", r"computer.vision",
         ],
     },
     {
@@ -123,10 +124,10 @@ SUBCATEGORY_RULES = [
         "icon": "📊",
         "color": "#3fb950",
         "keywords": [
-            r"数据", r"图表", r"可视化", r"\bBI\b", r"报表",
+            r"数据分析", r"图表", r"可视化", r"\bBI\b", r"报表",
             r"\bEcharts\b", r"\bD3\b", r"dashboard", r"仪表盘",
-            r"统计", r"分析", r"大数据", r"\bETL\b", r"数据仓库",
-            r"\bExcel\b", r"表格", r"电子表格", r"数据集",
+            r"统计", r"大数据", r"\bETL\b", r"数据仓库",
+            r"\bExcel\b", r"电子表格", r"数据集",
             r"爬虫", r"抓取", r"scrape", r"crawl",
         ],
     },
@@ -135,7 +136,7 @@ SUBCATEGORY_RULES = [
         "icon": "🎨",
         "color": "#f778ba",
         "keywords": [
-            r"设计", r"\bUI\b", r"\bUX\b", r"图片", r"视频",
+            r"UI设计", r"UX设计", r"图片", r"视频",
             r"音频", r"\b3D\b", r"动画", r"插画", r"图标",
             r"配色", r"字体", r"\bSVG\b", r"素材", r"壁纸",
             r"截图", r"录屏", r"编辑器", r"画板", r"原型",
@@ -148,9 +149,9 @@ SUBCATEGORY_RULES = [
         "icon": "🔒",
         "color": "#f85149",
         "keywords": [
-            r"安全", r"加密", r"隐私", r"\bVPN\b", r"代理",
+            r"网络安全", r"加密", r"隐私", r"\bVPN\b", r"代理",
             r"\bproxy\b", r"防火墙", r"漏洞", r"渗透",
-            r"密码", r"认证", r"\bSSL\b", r"\bTLS\b", r"证书",
+            r"密码管理", r"认证", r"\bSSL\b", r"\bTLS\b", r"证书",
             r"\bSSH\b", r"端到端", r"zero.knowledge", r"零知识",
             r"沙箱", r"隔离", r"审计", r"合规",
         ],
@@ -281,32 +282,20 @@ def save_state(state: dict):
         json.dump(state, f, indent=2)
 
 
-def load_existing_issues() -> dict:
-    """Load existing issues from data file, indexed by issue number."""
-    issues_file = DATA_DIR / "issues.json"
-    if issues_file.exists():
-        with open(issues_file, "r") as f:
-            data = json.load(f)
-            return {issue["number"]: issue for issue in data.get("issues", [])}
-    return {}
-
-
 def fetch_all_issues():
-    """Main fetch logic with incremental update support."""
+    """Main fetch logic - always fetch all open issues since SINCE_DATE."""
     headers = get_headers()
-    state = load_state()
-    existing = load_existing_issues()
 
-    since = state["last_fetch"] if existing else SINCE_DATE
+    # Always start from SINCE_DATE to get all issues
+    since = SINCE_DATE
     fetch_start = datetime.now(timezone.utc).isoformat()
 
     print(f"\n📡 Fetching issues from ruanyf/weekly")
     print(f"   Since: {since}")
-    print(f"   Existing issues: {len(existing)}")
+    print(f"   Fetching all open issues...")
     print()
 
-    new_count = 0
-    updated_count = 0
+    all_issues_dict = {}  # Use dict to dedupe by issue number
     page = 1
 
     while True:
@@ -346,12 +335,8 @@ def fetch_all_issues():
                 "featured": "weekly" in [l["name"] for l in raw.get("labels", [])],
             }
 
-            if issue["number"] in existing:
-                existing[issue["number"]] = issue
-                updated_count += 1
-            else:
-                existing[issue["number"]] = issue
-                new_count += 1
+            # Use dict to dedupe (same issue may appear in multiple pages)
+            all_issues_dict[issue["number"]] = issue
 
         remaining, limit = check_rate_limit(resp_headers)
         sys.stdout.write(f"\r   Page {page}: {len(issues_data)} issues (API: {remaining}/{limit} remaining)   \n")
@@ -362,10 +347,12 @@ def fetch_all_issues():
         page += 1
         time.sleep(0.5)
 
-    print(f"\n✅ Fetch complete: {new_count} new, {updated_count} updated, {len(existing)} total")
+    # Convert to list
+    all_issues = list(all_issues_dict.values())
+    print(f"\n✅ Fetch complete: {len(all_issues)} open issues")
 
     # Sort by created_at descending
-    all_issues = sorted(existing.values(), key=lambda x: x["created_at"], reverse=True)
+    all_issues = sorted(all_issues, key=lambda x: x["created_at"], reverse=True)
 
     # Build indices
     categories = build_category_index(all_issues)
@@ -376,8 +363,7 @@ def fetch_all_issues():
     write_output(all_issues, categories, monthly, stats)
 
     # Save state
-    state["last_fetch"] = fetch_start
-    state["total_fetched"] = len(all_issues)
+    state = {"last_fetch": fetch_start, "total_fetched": len(all_issues)}
     save_state(state)
 
     print(f"\n📁 Output written to {DATA_DIR}/")

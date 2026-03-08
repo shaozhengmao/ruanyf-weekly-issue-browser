@@ -17,14 +17,13 @@
         '开源项目': { bg: 'rgba(88,166,255,0.15)', text: '#58a6ff' },
         '工具':     { bg: 'rgba(240,136,62,0.15)', text: '#f0883e' },
         '产品':     { bg: 'rgba(163,113,247,0.15)', text: '#a371f7' },
-        '项目':     { bg: 'rgba(63,185,80,0.15)', text: '#3fb950' },
         '投稿推荐': { bg: 'rgba(210,153,34,0.15)', text: '#d29922' },
         '讨论/反馈': { bg: 'rgba(139,148,158,0.12)', text: '#8b949e' },
     };
 
     const CATEGORY_ICONS = {
         '开源项目': '📦', '工具': '🔧', '产品': '🚀',
-        '项目': '💡', '投稿推荐': '📮', '讨论/反馈': '💬',
+        '投稿推荐': '📮', '讨论/反馈': '💬',
     };
 
     // ===== State =====
@@ -34,7 +33,6 @@
     let currentCategory = 'all';
     let currentSubcategory = 'all';
     let currentMonth = 'all';
-    let currentSort = 'newest';
     let searchQuery = '';
     let searchIndex = null;
     let isLoading = false;
@@ -198,12 +196,8 @@
             issues = issues.filter(i => i.year_month === currentMonth);
         }
 
-        // Sort
-        if (currentSort === 'newest') {
-            issues.sort((a, b) => b.created_at.localeCompare(a.created_at));
-        } else if (currentSort === 'popular') {
-            issues.sort((a, b) => (b.reactions + b.comments) - (a.reactions + a.comments));
-        }
+        // Sort by newest (default)
+        issues.sort((a, b) => b.created_at.localeCompare(a.created_at));
 
         filteredIssues = issues;
         displayedCount = 0;
@@ -426,16 +420,6 @@
         dom.monthFilter.addEventListener('change', () => {
             currentMonth = dom.monthFilter.value;
             applyFilters();
-        });
-
-        // Sort toggle
-        $$('.sort-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                $$('.sort-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentSort = btn.dataset.sort;
-                applyFilters();
-            });
         });
 
         // Search
