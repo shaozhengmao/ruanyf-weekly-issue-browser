@@ -4,6 +4,9 @@
 
 > 数据范围：2024年1月至今的 open issues
 
+<img width="1049" height="796" alt="image" src="https://github.com/user-attachments/assets/2d7baa74-b28e-4493-a568-2149e25579e0" />
+
+
 ## ✨ 功能
 
 - **两级分类**：一级按标题前缀（已收录/开源项目/工具·产品/项目/投稿推荐/讨论反馈），二级按内容关键词（AI·LLM / 前端·Web / 后端·服务 / DevOps / 移动端 / 数据·可视化 / 设计·创意 / 安全·隐私 / 学习·教程）
