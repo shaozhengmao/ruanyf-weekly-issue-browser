@@ -55,6 +55,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main  # 确保拉取最新的 main 分支（包含 fetch job 刚 push 的数据）
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
