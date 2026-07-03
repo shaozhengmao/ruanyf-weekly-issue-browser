@@ -308,6 +308,7 @@ def fetch_all_issues():
             break
 
         # Filter out pull requests (GitHub API returns PRs as issues too)
+        raw_count = len(issues_data)
         issues_data = [i for i in issues_data if "pull_request" not in i]
 
         for raw in issues_data:
@@ -365,7 +366,7 @@ def fetch_all_issues():
                 except ValueError:
                     pass
 
-        if len(issues_data) < PER_PAGE:
+        if raw_count < PER_PAGE:
             break
 
         page += 1
