@@ -454,10 +454,12 @@ def build_stats(issues: list) -> dict:
     week_start = (now - timedelta(days=now.weekday())).replace(
         hour=0, minute=0, second=0, microsecond=0
     )
-    week_start_str = week_start.isoformat()
 
     this_month_count = sum(1 for i in issues if i["year_month"] == this_month)
-    this_week_count = sum(1 for i in issues if i["created_at"] >= week_start_str)
+    this_week_count = sum(
+        1 for i in issues
+        if datetime.fromisoformat(i["created_at"].replace("Z", "+00:00")) >= week_start
+    )
     featured_count = sum(1 for i in issues if i["featured"])
 
     cat_counts = {}
